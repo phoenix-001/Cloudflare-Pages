@@ -1,0 +1,1692 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Google口コミ 原稿作成フォーム（1ファイル）</title>
+  <style>
+    :root { --bg:#f6f7fb; --card:#fff; --text:#1f2328; --muted:#667085; --line:#e6e8ef; --accent:#4f46e5; }
+    body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic", sans-serif;
+           background:var(--bg); color:var(--text); }
+    header { padding: 20px 16px; background: linear-gradient(135deg, #ffffff, #eef2ff); border-bottom:1px solid var(--line); }
+    header h1 { margin:0; font-size:18px; }
+    header p { margin:6px 0 0; color:var(--muted); font-size:13px; line-height:1.6; }
+    main { max-width: 760px; margin: 0 auto; padding: 16px; display:flex; flex-direction:column; gap:16px; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px; box-shadow: 0 2px 10px rgba(31,35,40,0.04); }
+    .card h2 { margin:0 0 10px; font-size:16px; }
+    .field { margin: 10px 0 12px; }
+    label { display:flex; align-items:center; gap:8px; font-weight:800; font-size:13px; margin-bottom:6px; }
+    .req { font-size:11px; padding:2px 8px; border-radius:999px; background:#eef2ff; color:#3730a3; border:1px solid var(--line); }
+    .opt { font-size:11px; padding:2px 8px; border-radius:999px; background:#fff; color:var(--muted); border:1px solid var(--line); }
+    .hint { color:var(--muted); font-size:12px; margin-top:6px; line-height:1.5; }
+    input[type="text"], textarea, select {
+      width:100%; box-sizing:border-box; border:1px solid var(--line); border-radius:10px;
+      padding:10px 10px; font-size:14px; background:#fff; outline:none;
+    }
+    textarea { min-height: 88px; resize: vertical; }
+    .row { display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+    .row3 { display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; }
+    .btns { display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
+    button {
+      border:1px solid var(--line); background:#fff; color:var(--text);
+      padding:10px 12px; border-radius:10px; cursor:pointer; font-weight:800; font-size:13px;
+    }
+    button.primary { background: var(--accent); color:#fff; border-color: transparent; }
+    button:disabled { opacity: .55; cursor:not-allowed; }
+    button:active { transform: translateY(1px); }
+    .status { margin-top:8px; font-size:12px; color:var(--muted); }
+    .warn { color:#b42318; }
+    .draftGrid { display:grid; grid-template-columns: 1fr; gap:12px; }
+    .draftBox { border:1px dashed #c7cbe0; border-radius:12px; padding:12px; background:#fbfbff; }
+    .draftHeader { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; }
+    .chip { font-size:12px; color:var(--muted); background:#fff; border:1px solid var(--line); border-radius:999px; padding:6px 10px; }
+    .editable {
+      margin-top:10px; padding:12px; border:1px solid var(--line); border-radius:10px; background:#fff;
+      min-height: 150px; white-space: pre-wrap; line-height:1.75;
+    }
+    .editable:focus { border-color: #b9b5ff; box-shadow: 0 0 0 3px rgba(79,70,229,0.12); outline:none; }
+    .toggleRow { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    .toggleRow input { transform: translateY(1px); }
+    .panel {
+      border:1px solid var(--line); border-radius:12px; background:#fff; padding:10px; margin-top:10px;
+    }
+    .panel h3 { margin:0 0 6px; font-size:13px; }
+    .panel ul { margin:6px 0 0 18px; padding:0; }
+    .panel li { margin: 6px 0; font-size:12px; color:var(--muted); line-height:1.5; }
+    .badge { display:inline-block; font-size:11px; padding:2px 8px; border-radius:999px; border:1px solid var(--line); }
+    .badgeWarn { background:#fff1f3; color:#b42318; }
+    .badgeOk { background:#ecfdf3; color:#027a48; }
+    .suggest {
+      margin-top:8px; padding:10px; background:#ffffff; border:1px solid var(--line); border-radius:10px;
+      font-size:12px; color:var(--muted);
+    }
+    .suggest b { color:var(--text); }
+    footer { padding: 16px; text-align:center; color:var(--muted); font-size:12px; }
+      .spinner{width:22px;height:22px;border:3px solid #e6e8ef;border-top-color:#4f46e5;border-radius:50%;animation:spin 0.9s linear infinite;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+
+.mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;}
+
+/* v29: force Google-Forms-like single column layout (even on wide screens) */
+main { max-width: 760px; }
+.row, .row2, .row3 { display: grid; grid-template-columns: 1fr !important; gap: 10px; }
+
+</style>
+</head>
+<body>
+<div id="jsAliveBadge" style="position:fixed;bottom:12px;right:12px;z-index:10000;background:#111827;color:#fff;border-radius:999px;padding:8px 10px;font-size:12px;display:flex;gap:8px;align-items:center;box-shadow:0 8px 20px rgba(0,0,0,.18);"><span id="jsAliveDot" style="width:10px;height:10px;border-radius:50%;background:#ef4444;display:inline-block;"></span><span id="jsAliveText">JS: 未起動</span></div>
+
+<div id="loadingOverlay" style="display:none;position:fixed;inset:0;background:rgba(17,24,39,.35);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:#fff;border:1px solid #e6e8ef;border-radius:14px;padding:16px 18px;min-width:240px;box-shadow:0 10px 30px rgba(0,0,0,.15);font-family:system-ui;">
+    <div style="display:flex;gap:12px;align-items:center;">
+      <div class="spinner" aria-hidden="true"></div>
+      <div>
+        <div style="font-weight:800;font-size:14px;">生成中…</div>
+        <div id="loadingMsg" style="color:#667085;font-size:12px;margin-top:2px;">少しお待ちください</div>
+      </div>
+    </div>
+    <div style="margin-top:10px;color:#667085;font-size:11px;">反応がない場合：このHTMLを <b>Safariで開く</b>（ファイルのプレビューではなく）</div>
+  </div>
+</div>
+
+<header>
+  <h1>Google口コミ 原稿作成フォーム（1ファイル）</h1>
+  <p>
+    口コミ投稿は任意です。書ける範囲で大丈夫。<br>
+    「AIサポート」か「自由記述」を選べます。匿名ONでは、個人情報っぽい文字列を原稿内で自動マスクします。<br>
+    ※ブラウザの安全仕様により、Googleの投稿欄へ「自動貼り付け」はできません。コピーして貼り付けてね。
+  </p>
+</header>
+<noscript>
+  <div style="max-width:1040px;margin:12px auto;padding:12px;border:1px solid #f1aeb5;background:#fff5f5;border-radius:12px;font-family:system-ui;-webkit-text-size-adjust:100%;">
+    <b>このページはJavaScriptが必要です。</b><br>
+    サンプル表示や原稿生成、口コミページへの移動はJavaScriptで動きます。<br>
+    iPhoneの場合は「ファイル」プレビューではなく、共有→<b>Safariで開く</b> を使ってください。
+  </div>
+</noscript>
+
+
+<main>
+  <!-- LEFT -->
+  <section class="card">
+    <h2>アンケート</h2>
+
+    <div class="panel">
+      <h3>Google口コミ投稿のお願い（任意）</h3>
+      <div class="hint">
+        もし差し支えなければ、見学・体験の感想をGoogle口コミとして投稿していただけると助かります。<br>
+        ※投稿は任意です。個人情報（氏名・住所・電話・メール）やスタッフ個人名は書かないでOKです。
+      </div>
+
+      <div class="field" style="margin-top:10px;">
+        <label>原稿の書き方を選んでください <span class="req">必須</span></label>
+        <div class="toggleRow">
+          <input type="radio" name="mode" id="modeAi" value="ai" checked>
+          <label for="modeAi" style="margin:0;">AIサポートで原稿を作る（おすすめ）</label>
+        </div>
+        <div class="toggleRow">
+          <input type="radio" name="mode" id="modeFree" value="free">
+          <label for="modeFree" style="margin:0;">自分で自由に書く（自由記述）</label>
+        </div>
+      </div>
+
+      <div class="hint">投稿画面は「口コミページを開く」ボタンで開きます（URL固定）。<br><a id="reviewLink" href="https://search.google.com/local/writereview?placeid=ChIJpazYlBQdGWARyuN1VZT8bug" target="_blank" rel="noopener" style="display:inline-block;margin-top:6px;font-size:12px;">口コミページのリンク（開けない時はこちら）</a></div>
+        <div class="btns" style="margin-top:8px;">
+          <button type="button" class="ghost" id="copyReviewUrl">URLをコピー</button>
+        </div>
+        <input id="reviewUrlBox" class="mono" style="display:none;margin-top:8px;" readonly value="">
+        <div class="hint">開けない場合は、このURLをコピーして Safari / Chrome のアドレス欄に貼り付けてください。</div>
+
+    </div>
+
+    <!-- Common header inputs -->
+    <div class="row3">
+      <div class="field">
+        <label for="stars">星 <span class="opt">任意</span></label>
+        <select id="stars">
+          <option value="">未選択</option>
+          <option>★★★★★</option>
+          <option>★★★★☆</option>
+          <option>★★★☆☆</option>
+          <option>★★☆☆☆</option>
+          <option>★☆☆☆☆</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="tone">トーン <span class="opt">任意</span></label>
+        <select id="tone">
+          <option value="friendly">親しみ＋丁寧</option>
+          <option value="polite">丁寧め</option>
+          <option value="casual">親しみ強め</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="facilityName">事業所名 <span class="opt">任意</span></label>
+        <input id="facilityName" type="text" placeholder="例：〇〇就労移行支援事業所" />
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="toggleRow">
+        <input type="checkbox" id="anonymous" />
+        <label for="anonymous" style="margin:0;">匿名で書きたい（署名抑制＋個人情報マスク）</label>
+        <span class="badge badgeOk" id="anonBadge">OFF</span>
+      </div>
+      <div class="hint">匿名ONのとき、電話/メール/郵便番号/住所らしき表現は原稿上で「[非公開]」に置換します。</div>
+    </div>
+
+    <!-- AI SECTION -->
+    <div id="aiSection">
+      <!-- Activity checkboxes -->
+      <div class="field">
+        <label>当日体験したこと <span class="opt">任意</span></label>
+        <div class="toggleRow">
+          <input type="checkbox" id="act_interview">
+          <label for="act_interview" style="margin:0;">スタッフとの面談</label>
+        </div>
+        <div class="toggleRow">
+          <input type="checkbox" id="act_tour">
+          <label for="act_tour" style="margin:0;">施設見学</label>
+        </div>
+        <div class="toggleRow">
+          <input type="checkbox" id="act_training">
+          <label for="act_training" style="margin:0;">訓練体験</label>
+        </div>
+        <div class="toggleRow">
+          <input type="checkbox" id="act_other">
+          <label for="act_other" style="margin:0;">その他</label>
+        </div>
+        <input id="act_other_text" type="text" placeholder="（任意）例：オンライン講義の見学、模擬就労の説明 など" />
+        <div class="hint">チェックだけでもOK。原稿内で自然な一文にまとめます。</div>
+      </div>
+
+      <div class="field">
+        <label for="q1_safe">1. 見学・体験して「安心して過ごせそう」と感じましたか？ <span class="req">必須</span></label>
+        <select id="q1_safe">
+          <option value="">選択してください</option>
+          <option value="yes">はい（安心できた）</option>
+          <option value="no">少し不安が残った</option>
+        </select>
+        <div class="hint">よければ理由を一言（任意）</div>
+        <input id="q1_safe_note" type="text" placeholder="例：質問しやすかった／雰囲気が落ち着いていた など" />
+      </div>
+
+      <div class="field">
+        <label for="q2_staff">2. スタッフの対応はいかがでしたか？ <span class="req">必須</span></label>
+        <select id="q2_staff">
+          <option value="">選択してください</option>
+          <option value="5">5 とても安心できた</option>
+          <option value="4">4 安心できた</option>
+          <option value="3">3 どちらとも言えない</option>
+          <option value="2">2 少し不安が残った</option>
+          <option value="1">1 不安が大きかった</option>
+        </select>
+        <div class="hint">印象に残った点があれば（任意）</div>
+        <input id="q2_staff_note" type="text" placeholder="例：丁寧／親しみやすい／面談頻度が多い など" />
+      </div>
+
+      <div class="field">
+        <label for="q3_clear">3. 体験内容（面談・見学・説明など）は分かりやすかったですか？ <span class="req">必須</span></label>
+        <select id="q3_clear">
+          <option value="">選択してください</option>
+          <option value="yes">はい</option>
+          <option value="mid">どちらとも言えない</option>
+          <option value="no">少し分かりにくい所があった</option>
+        </select>
+        <div class="hint">特に印象に残ったこと（任意）</div>
+        <input id="q3_clear_note" type="text" placeholder="例：模擬就労の説明が分かりやすかった など" />
+      </div>
+
+      <div class="field">
+        <label for="q4_reco">4. 全体として、この事業所をおすすめできますか？ <span class="req">必須</span></label>
+        <select id="q4_reco">
+          <option value="">選択してください</option>
+          <option value="yes">はい</option>
+          <option value="mid">どちらとも言えない</option>
+          <option value="no">人によって合う/合わないかも</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="extraNote">ひとこと追記（任意） <span class="opt">任意</span></label>
+        <input id="extraNote" type="text" placeholder="例：同じように悩んでいる方の参考になれば嬉しいです" />
+        <div class="hint">短い一文だけでOK。原稿のどこかに自然に入ります（位置は“安全に”揺れます）。</div>
+      </div>
+
+      <!-- Good points checkboxes -->
+      <div class="field">
+        <label>良かった点（選ぶだけでOK） <span class="opt">任意</span></label>
+
+        <div class="toggleRow">
+          <input type="checkbox" id="good_mock">
+          <label for="good_mock" style="margin:0;">模擬就労がある</label>
+        </div>
+        <div class="toggleRow">
+          <input type="checkbox" id="good_cert">
+          <label for="good_cert" style="margin:0;">資格取得を目指しやすい</label>
+        </div>
+        <div class="toggleRow">
+          <input type="checkbox" id="good_interview_freq">
+          <label for="good_interview_freq" style="margin:0;">面談頻度が多い（相談しやすい）</label>
+        </div>
+        <div class="toggleRow">
+          <input type="checkbox" id="good_online">
+          <label for="good_online" style="margin:0;">全国の講師によるオンライン講義がある</label>
+        </div>
+        <div class="toggleRow">
+          <input type="checkbox" id="good_other">
+          <label for="good_other" style="margin:0;">その他</label>
+        </div>
+
+        <input id="good_other_text" type="text" placeholder="（任意）例：個別の学習計画、就職活動サポート など" />
+        <div class="hint">チェックだけでも原稿に反映されます。補足があれば下の自由記述にも書けます。</div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="oProgram">良かった点（自由記述） <span class="opt">任意</span></label>
+          <textarea id="oProgram" placeholder="例：模擬就労／資格取得／面談頻度／オンライン講義など"></textarea>
+        </div>
+        <div class="field">
+          <label for="oPlace">施設の雰囲気・設備 <span class="opt">任意</span></label>
+          <textarea id="oPlace" placeholder="例：落ち着く／清潔／集中しやすい など"></textarea>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="oChange">体験後の変化 <span class="opt">任意</span></label>
+          <textarea id="oChange" placeholder="例：不安が減った／通うイメージが湧いた など"></textarea>
+        </div>
+        <div class="field">
+          <label for="oConcern">気になった点（あれば） <span class="opt">任意</span></label>
+          <textarea id="oConcern" placeholder="例：混み合う時間帯は少し賑やかに感じるかも"></textarea>
+          <div class="toggleRow">
+            <input type="checkbox" id="includeConcern" checked />
+            <label for="includeConcern" style="margin:0;">口コミ本文に「気になった点」を入れる</label>
+          </div>
+          <div class="hint">入れる場合は「自分はこう感じた」＋「ただ全体は…」の形に整えます。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FREE SECTION -->
+    <div id="freeSection" style="display:none;">
+      <div class="field">
+        <label for="freeText">自由記述（そのまま口コミに使えます） <span class="opt">任意</span></label>
+        <textarea id="freeText" placeholder="①見学のきっかけ／訪問前の気持ち
+②当日やったこと（面談・見学・体験など）
+③良かった点
+④気になった点（任意）
+⑤おすすめ一言"></textarea>
+        <div class="hint">テンプレのままでもOK。書ける範囲で大丈夫です。</div>
+      </div>
+      <div class="btns" style="margin-top:0;">
+        <button type="button" class="copyOne" data-target="freeText">コピー</button>
+        <button type="button" class="openBtn">口コミページを開く</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="userName">署名 <span class="opt">任意</span></label>
+      <input id="userName" type="text" placeholder="例：体験利用者 / 利用検討者" />
+      <div class="hint">匿名ONのときは出力に使いません。</div>
+    </div>
+
+    <div class="btns">
+      <button class="primary" id="genBtn" type="button">3案生成（AIサポート用）</button>
+      <button id="sampleBtn" type="button">サンプル</button>
+      <button id="clearBtn" type="button">クリア</button>
+      <button type="button" class="openBtn">口コミページを開く</button>
+    </div>
+
+    <div class="status" id="formStatus"></div>
+
+    <div class="panel">
+      <h3>入力チェック（やんわり注意）</h3>
+      <div class="hint">削除はしません。投稿前に表現を整える目安です。</div>
+      <ul id="adviceList"><li>まだチェックはありません。</li></ul>
+      <div class="suggest" id="rewriteBox" style="display:none;"></div>
+    </div>
+  </section>
+
+  <!-- RIGHT -->
+  <section class="card">
+    <h2>生成された原稿（編集OK・3案）</h2>
+
+    <div class="draftGrid">
+      <div class="draftBox">
+        <div class="draftHeader">
+          <div class="chip" id="metaShort">短い版｜未生成</div>
+          <div class="btns" style="margin:0;">
+            <button type="button" class="copyOne" data-target="draftShort">コピー</button>
+            <button type="button" class="openBtn">口コミページを開く</button>
+          </div>
+        </div>
+        <div id="draftShort" class="editable" contenteditable="true">短い版の原稿はここに表示されます。</div>
+        <div class="status" id="statusShort"></div>
+      </div>
+
+      <div class="draftBox">
+        <div class="draftHeader">
+          <div class="chip" id="metaMed">標準版｜未生成</div>
+          <div class="btns" style="margin:0;">
+            <button type="button" class="copyOne" data-target="draftMed">コピー</button>
+            <button type="button" class="openBtn">口コミページを開く</button>
+          </div>
+        </div>
+        <div id="draftMed" class="editable" contenteditable="true">標準版の原稿はここに表示されます。</div>
+        <div class="status" id="statusMed"></div>
+      </div>
+
+      <div class="draftBox">
+        <div class="draftHeader">
+          <div class="chip" id="metaPol">丁寧版｜未生成</div>
+          <div class="btns" style="margin:0;">
+            <button type="button" class="copyOne" data-target="draftPol">コピー</button>
+            <button type="button" class="openBtn">口コミページを開く</button>
+          </div>
+        </div>
+        <div id="draftPol" class="editable" contenteditable="true">丁寧版の原稿はここに表示されます。</div>
+        <div class="status" id="statusPol"></div>
+      </div>
+    </div>
+
+    <div class="hint warn" style="margin-top:10px;">
+      ※ブラウザの安全仕様により、Googleの投稿欄へ「自動貼り付け」はできません。コピーして貼り付けてね。
+    </div>
+  </section>
+</main>
+
+<footer>1ファイルで動きます（保存してブラウザで開くだけ）。</footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', ()=>{
+  // ★口コミ投稿画面URL（固定）
+  const REVIEW_URL = "https://search.google.com/local/writereview?placeid=ChIJpazYlBQdGWARyuN1VZT8bug";
+
+  // ====== Diagnostics ======
+  function showFatal(msg){
+    const s = document.getElementById("formStatus");
+    if (s) {
+      s.textContent = "エラー： " + msg + "（Safariで開く/ポップアップ許可/再読み込みを試してください）";
+      s.className = "status warn";
+    } else {
+      alert("エラー：" + msg);
+    }
+  }
+  window.addEventListener('error', (e)=>{ showFatal(e.message || "不明なエラー"); });
+  window.addEventListener('unhandledrejection', (e)=>{ showFatal((e.reason && e.reason.message) ? e.reason.message : String(e.reason)); });
+
+  // ====== Loading UI ======
+  function showLoading(msg){
+    const ov = document.getElementById('loadingOverlay');
+    const lm = document.getElementById('loadingMsg');
+    if (lm) lm.textContent = msg || '少しお待ちください';
+    if (ov) { ov.style.display = 'flex'; }
+  }
+  function hideLoading(){
+    const ov = document.getElementById('loadingOverlay');
+    if (ov) ov.style.display = 'none';
+  }
+
+
+  const el = (id) => document.getElementById(id);
+  const clean = (s) => (s || "").trim();
+  const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+  function clipAt(text, limit){
+    const t = (text||"").replace(/\s+$/,"").trim();
+    if (!t) return "";
+    if (t.length <= limit) return t;
+    const cutPoints = ["。","！","？","!","?","、"," "];
+    let best = -1;
+    for (const p of cutPoints){
+      const idx = t.lastIndexOf(p, limit-1);
+      if (idx > best && idx >= Math.max(12, Math.floor(limit*0.6))) best = idx;
+    }
+    if (best >= 0) return t.slice(0, best+1).trim();
+    return t.slice(0, Math.max(0, limit-1)).trim() + "…";
+  }
+
+  function endsWithPunct(s){
+    return /[。！？!?…]$/.test(s||"");
+  }
+
+  function ensureMasu(s){
+    s = clean(s);
+    if (!s) return "";
+    s = s.replace(/\r\n/g,"\n").replace(/\r/g,"\n").replace(/\s+/g," ").trim();
+
+    // If it's a short fragment like "丁寧で親しみやすい" -> make it a sentence.
+    const looksFragment = !/[。！？!?…]$/.test(s) && !/(です|ます|でした|でした。|と思います|と思いました|感じました)/.test(s);
+    if (looksFragment && /[一-龥ぁ-んァ-ン].*(い|かった)$/.test(s)){
+      s = s + "と感じました";
+    }
+
+    // light, safe ending normalization
+    s = s.replace(/だと思う。?$/,"と思います。");
+    s = s.replace(/だと思った。?$/,"と思いました。");
+    s = s.replace(/と思った。?$/,"と思いました。");
+    s = s.replace(/感じた。?$/,"感じました。");
+    s = s.replace(/だった。?$/,"でした。");
+    s = s.replace(/だ。?$/,"です。");
+
+    if (!endsWithPunct(s)) s += "。";
+    s = s.replace(/。{2,}/g,"。");
+    return s;
+  }
+
+  function joinSentences(sents, style){
+    const out = [];
+    const c1 = (style==="short")
+      ? ["また、","そして、"]
+      : ["また、","さらに、","加えて、","あわせて、"];
+    const c2 = (style==="short")
+      ? [""]
+      : ["そのうえで、","一方で、","あわせて、"];
+    for (let i=0;i<(sents||[]).length;i++){
+      let s = ensureMasu(sents[i]);
+      if (!s) continue;
+      if (i===0) out.push(s);
+      else if (i===1) out.push(pick(c1) + s.replace(/^[、,]\s*/,""));
+      else out.push(pick(c2) + s.replace(/^[、,]\s*/,""));
+    }
+    return out.join("").replace(/\s+/g," ").trim();
+  }
+
+  function pickMany(arr, k){
+    const a = (arr||[]).slice();
+    for (let i=a.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      const t=a[i]; a[i]=a[j]; a[j]=t;
+    }
+    return a.slice(0, Math.min(k, a.length));
+  }
+
+  function derivedSentences(d){
+    const out = [];
+    const add = (s)=>{ s = clean(s); if (s) out.push(s); };
+
+    const ns = parseInt(d.q2_staff||"0",10);
+    const na = parseInt(d.q1_safe||"0",10);
+    const nc = parseInt(d.q3_clear||"0",10);
+    const w = (n)=> (n>=5)?"とても":(n==4)?"かなり":(n==3)?"比較的":(n==2)?"やや":"あまり";
+
+    if (ns) add(`スタッフの対応は${w(ns)}丁寧で、話しやすいと感じました`);
+    if (na) add(`全体の雰囲気は${w(na)}落ち着いていて、安心して過ごせそうでした`);
+    if (nc) add(`説明は${w(nc)}分かりやすく、通所後のイメージが持てました`);
+
+    const goods = [];
+    if (d.good_mock) goods.push("模擬就労");
+    if (d.good_cert) goods.push("資格取得");
+    if (d.good_interview_freq) goods.push("面談の頻度");
+    if (d.good_online) goods.push("オンライン講義");
+    if (d.good_other && clean(d.good_other_text)) goods.push(clean(d.good_other_text));
+    if (goods.length){
+      const picked = pickMany(goods, 2);
+      add(`内容面では、${picked.join("や")}のサポートが用意されている点が心強いと思いました`);
+    }
+
+    const acts = [];
+    if (d.act_interview) acts.push("面談");
+    if (d.act_tour) acts.push("施設見学");
+    if (d.act_training) acts.push("訓練体験");
+    if (d.act_other) acts.push("その他");
+    if (acts.length){
+      add(`${acts.slice(0,3).join("・")}を通して、事業所の様子を具体的に確認できました`);
+    }
+
+    if (d.includeConcern && clean(d.oConcern)){
+      add(`気になった点は、${clean(d.oConcern)}でした`);
+    }
+
+    const seen = {};
+    const uniq = [];
+    for (let s of out){
+      const k = (s||"").replace(/[\s　]+/g,"").slice(0,40);
+      if (!seen[k]){ seen[k]=1; uniq.push(s); }
+    }
+    return uniq;
+  }
+
+  function keyNotes(d){
+    const notes = [];
+    const pushIf = (s)=>{ s = clean(s); if (s) notes.push(s); };
+    pushIf(d.freeText);
+    pushIf(d.q2_staff_note);
+    pushIf(d.oProgram);
+    pushIf(d.oPlace);
+    pushIf(d.q3_clear_note);
+    pushIf(d.q1_safe_note);
+    pushIf(d.extraNote);
+    if (d.includeConcern) pushIf(d.oConcern);
+
+    const seen = new Set();
+    const uniq = [];
+    for (const n of notes){
+      const k = n.replace(/[\s　]+/g,"").slice(0,26);
+      if (!seen.has(k)){
+        seen.add(k);
+        uniq.push(n);
+      }
+    }
+    return uniq;
+  }
+
+  function closingLine(d){
+    const r = clean(d.q4_reco);
+    if (r === "yes") return pick(["参考になりました。","考える材料になりました。","また伺ってみたいと思いました。"]);
+    if (r === "mid") return pick(["もう少し情報を整理して考えたいです。","気になる点を確認しながら考えたいです。"]);
+    if (r === "no")  return pick(["自分に合うか慎重に考えたいです。","比較しながら考えたいです。"]);
+    return "";
+  }
+
+  function stripAiPrefix(s){
+    s = clean(s);
+    if (!s) return "";
+    // Remove common AI-ish prefixes
+    s = s.replace(/^（?印象[:：]\s*/,"");
+    s = s.replace(/^印象[:：]\s*/,"");
+    s = s.replace(/^\(?印象[:：]\s*/,"");
+    return s.trim();
+  }
+
+  function toDesuMasu(s){
+    s = clean(s);
+    if (!s) return "";
+    // Remove trailing punctuation temporarily
+    let tail = "";
+    const m = s.match(/([。！？!?…]+)$/);
+    if (m){ tail = m[1]; s = s.slice(0, -tail.length); }
+    s = s.trim();
+
+    // Already polite
+    if (/(です|ます|でした|ました|でしょう|と思います|感じます)$/.test(s)) {
+      return (s + (tail || "")).trim();
+    }
+
+    // Simple conversions (safe endings only)
+    const rules = [
+      [/と思った$/, "と思いました"],
+      [/感じた$/, "感じました"],
+      [/良かった$/, "良かったです"],
+      [/できた$/, "できました"],
+      [/持てた$/, "持てました"],
+      [/湧いた$/, "湧きました"],
+      [/参加した$/, "参加しました"],
+      [/体験した$/, "体験しました"],
+      [/聞けた$/, "聞けました"],
+      [/分かった$/, "分かりました"],
+      [/だった$/, "でした"],
+      [/だ$/, "です"],
+    ];
+    for (const [re, rep] of rules){
+      if (re.test(s)){ s = s.replace(re, rep); break; }
+    }
+    return (s + (tail || "")).trim();
+  }
+
+  
+  function normSentence(s){
+    s = stripAiPrefix(s);
+    if (!s) return "";
+    // unify newlines
+    s = s.replace(/\r\n/g,"\n").replace(/\r/g,"\n");
+    // remove leading quotes/parens
+    s = s.replace(/^[「『\(（\[]+\s*/,"");
+    s = s.replace(/\s*[」』\)）\]]+$/,"");
+    // collapse spaces
+    s = s.replace(/\s+/g," ").trim();
+    // remove duplicate punctuation
+    s = s.replace(/。{2,}/g,"。");
+    s = s.replace(/[！!]{2,}/g,"！");
+    s = s.replace(/[？?]{2,}/g,"？");
+
+    // ensure ending punctuation
+    if (!/[。！？!?…]$/.test(s)) s += "。";
+
+    // unify to polite style lightly
+    s = toDesuMasu(s);
+
+    // final cleanup duplicate punctuation again
+    s = s.replace(/。{2,}/g,"。");
+    return s.trim();
+  }
+
+  function splitSentences(raw){
+    raw = stripAiPrefix(raw);
+    if (!raw) return [];
+    raw = raw.replace(/\r\n/g,"\n").replace(/\r/g,"\n");
+    // split by 。！？ or newline, keep content
+    const parts = [];
+    const lines = raw.split(/[\n]+/);
+    for (const line of lines){
+      const segs = line.split(/[。！？!?]/);
+      for (const seg of segs){ parts.push(seg); }
+    }
+    const out = [];
+    for (let p of parts){
+      p = clean(p);
+      if (!p) continue;
+      // drop dangling "と感じました" duplication risk by keeping phrase as-is; normSentence will add 。
+      out.push(normSentence(p));
+    }
+    return out;
+  }
+
+  function collectSentences(d){
+    // Priority: user-written content first. Split multi-sentence notes to avoid "つぎはぎ" + duplication.
+    const rawList = [];
+    const pushIf = (s)=>{ s = clean(s); if (s) rawList.push(s); };
+
+    pushIf(d.freeText);
+    pushIf(d.q2_staff_note);
+    pushIf(d.oProgram);
+    pushIf(d.oPlace);
+    pushIf(d.q3_clear_note);
+    pushIf(d.q1_safe_note);
+    pushIf(d.extraNote);
+    if (d.includeConcern) pushIf(d.oConcern);
+
+    // flatten into sentences
+    let sents = [];
+    rawList.forEach(x => { sents = sents.concat(splitSentences(x)); });
+
+    // de-dupe
+    const seen = new Set();
+    const uniq = [];
+    for (const s of sents){
+      const k = s.replace(/[\s　]+/g,"").slice(0,30);
+      if (!seen.has(k)){
+        seen.add(k);
+        uniq.push(s);
+      }
+
+  function ratingWord5(v){
+    // v is "1".."5" or ""
+    const n = parseInt(v||"0",10);
+    if (!n) return "";
+    if (n >= 5) return "とても";
+    if (n == 4) return "かなり";
+    if (n == 3) return "比較的";
+    if (n == 2) return "やや";
+    return "あまり";
+  }
+
+  function derivedSentences(d){
+    const out = [];
+    const add = (s)=>{ s = clean(s); if (s) out.push(normSentence(s)); };
+
+    // From 5-point selections (even if notes empty)
+    const sw = ratingWord5(d.q2_staff);
+    const pw = ratingWord5(d.q1_safe);
+    const cw = ratingWord5(d.q3_clear);
+
+    if (sw){
+      add(`スタッフは${sw}親しみやすく、対応も丁寧に感じました`);
+    }
+    if (pw){
+      add(`場の雰囲気は${pw}落ち着いていて安心できました`);
+    }
+    if (cw){
+      add(`説明は${cw}分かりやすく、イメージが持てました`);
+    }
+
+    // From good points checkboxes
+    const goods = [];
+    if (d.good_mock) goods.push("模擬就労");
+    if (d.good_cert) goods.push("資格取得");
+    if (d.good_interview_freq) goods.push("面談の頻度");
+    if (d.good_online) goods.push("オンライン講義");
+    if (d.good_other && clean(d.good_other_text)) goods.push(clean(d.good_other_text));
+
+    if (goods.length){
+      const top = goods.slice(0,3).join("・");
+      add(`訓練内容では、${top}が気になりました`);
+    }
+
+    // From activity selections: add one more meaningful sentence than just "面談/訓練体験"
+    if (d.act_training){
+      add("訓練の進め方や通所後の流れを具体的に聞けました");
+    }
+    if (d.act_interview){
+      add("面談では、今の状況を踏まえて丁寧に話を聞いてもらえました");
+    }
+    if (d.act_tour){
+      add("施設は清潔感があり、落ち着いて過ごせそうでした");
+    }
+
+    // If includeConcern is false, don't add concern
+    if (d.includeConcern && clean(d.oConcern)){
+      add(`気になった点は、${stripAiPrefix(d.oConcern)}でした`);
+    }
+
+    // De-dupe again
+    const seen = new Set();
+    const uniq = [];
+    for (const s of out){
+      const k = s.replace(/[\s　]+/g,"").slice(0,36);
+      if (!seen.has(k)){
+        seen.add(k);
+        uniq.push(s);
+      }
+    }
+    return uniq;
+  }
+    }
+    return uniq;
+  }
+
+  async function copyTextToClipboard(text){
+    // iOS/Chrome(file://) can block navigator.clipboard; fallback to execCommand.
+    try{
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+    } catch(e) {}
+    try{
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly','');
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, ta.value.length);
+      const ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      return !!ok;
+    } catch(e){
+      return false;
+    }
+  }
+
+  // ====== Mode switch ======
+  function syncModeUI(){
+    const ai = el("modeAi").checked;
+    el("aiSection").style.display = ai ? "block" : "none";
+    el("freeSection").style.display = ai ? "none" : "block";
+    el("genBtn").disabled = !ai;
+    el("genBtn").title = ai ? "" : "自由記述モードでは生成は不要です";
+  }
+  el("modeAi").addEventListener("change", syncModeUI);
+  el("modeFree").addEventListener("change", syncModeUI);
+
+  // ====== NG/Privacy detection rules ======
+  const REPLACEMENTS = [
+    { from: /最悪/g, to: "私には合いませんでした" },
+    { from: /最低/g, to: "私の期待とは少し違いました" },
+    { from: /詐欺/g, to: "誤解が生じやすいかもしれません" },
+    { from: /無能/g, to: "対応にばらつきがあるように感じました" },
+    { from: /二度と/g, to: "今後は利用しないと思います" },
+    { from: /絶対に行くな/g, to: "合うかどうかは一度見学して判断するのが良いと思います" },
+    { from: /治る/g, to: "気持ちが楽になった" },
+    { from: /完治/g, to: "落ち着いて過ごせた" },
+  ];
+
+  const PRIVACY_MASKS = [
+    { re: /\\b0\\d{1,4}-\\d{1,4}-\\d{3,4}\\b/g, to: "[非公開]" },
+    { re: /\\b0\\d{9,10}\\b/g, to: "[非公開]" },
+    { re: /[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/ig, to: "[非公開]" },
+    { re: /(〒\\s?\\d{3}-\\d{4})/g, to: "[非公開]" },
+    { re: /(東京都|北海道|大阪府|京都府|..県).{0,14}(市|区|町|村)/g, to: "[非公開]" }
+  ];
+
+  const RULES = [
+    { key:"harass", label:"強い断定・攻撃的表現が含まれているかも", level:"warn",
+      patterns:["最悪","詐欺","無能","クズ","やばい","二度と","絶対に行くな","ありえない","最低"],
+      tip:"事実＋自分の感想に寄せると安心です（例：「私はこう感じました」）。"
+    },
+    { key:"identify", label:"個人特定につながる情報が含まれているかも", level:"warn",
+      regexes: PRIVACY_MASKS.map(x=>x.re),
+      patterns:["フルネーム","本名","住所","電話番号","メール"],
+      tip:"口コミには個人情報（自分/他人）は書かない方が安全です。"
+    },
+    { key:"medical", label:"医療的な断定（治る/診断など）っぽい表現があるかも", level:"warn",
+      patterns:["治る","完治","薬","診断","医師","医療","症状が消えた"],
+      tip:"医療断定は避けて、「安心できた」「気持ちが楽になった」など体感表現が無難です。"
+    }
+  ];
+  function escapeHtml(s){
+    return (s||"")
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;");
+  }
+
+
+  function analyzeText(text){
+    const hits = [];
+    for (const rule of RULES) {
+      let found = false;
+      const detail = [];
+
+      if (rule.patterns) {
+        for (const p of rule.patterns) {
+          if (text.includes(p)) { found = true; detail.push(`「${p}」`); }
+        }
+      }
+      if (rule.regexes) {
+        for (const r of rule.regexes) {
+          const m = text.match(r);
+          if (m && m.length) { found = true; detail.push("形式検出"); break; }
+        }
+      }
+      if (found) hits.push({ ...rule, detail: detail.slice(0,6).join("、") });
+    }
+    return hits;
+  }
+
+  function proposeRewrite(text){
+    let out = text;
+    for (const r of REPLACEMENTS) out = out.replace(r.from, r.to);
+    return out === text ? "" : out;
+  }
+
+  function collectAllInputText(){
+    const ids = [
+      "facilityName","userName","freeText",
+      "q1_safe_note","q2_staff_note","q3_clear_note",
+      "extraNote",
+      "act_other_text",
+      "good_other_text",
+      "oProgram","oPlace","oChange","oConcern"
+    ];
+    return ids.map(id => (el(id) ? clean(el(id).value) : "")).filter(Boolean).join("\n");
+  }
+
+  function renderAdvice(hits, rewriteSuggestion){
+    const ul = el("adviceList");
+    ul.innerHTML = "";
+
+    if (!hits.length) {
+      const li = document.createElement("li");
+      li.textContent = "今のところ注意点は見つかっていません。";
+      li.style.color = "var(--muted)";
+      ul.appendChild(li);
+    } else {
+      for (const h of hits) {
+        const li = document.createElement("li");
+        const badge = document.createElement("span");
+        badge.className = "badge badgeWarn";
+        badge.textContent = "注意";
+        badge.style.marginRight = "8px";
+
+        const title = document.createElement("span");
+        title.textContent = h.label + (h.detail ? `（例: ${h.detail}）` : "");
+
+        const tip = document.createElement("div");
+        tip.textContent = "→ " + h.tip;
+        tip.style.marginTop = "4px";
+        tip.style.color = "var(--muted)";
+
+        li.appendChild(badge);
+        li.appendChild(title);
+        li.appendChild(tip);
+        ul.appendChild(li);
+      }
+    }
+
+    const box = el("rewriteBox");
+    if (rewriteSuggestion) {
+      box.style.display = "block";
+      box.innerHTML =
+        `<b>言い換え候補（自動）</b><br>参考です。必要ならコピペして表現を整えてね。<br><br>` +
+        `<div style="white-space:pre-wrap; color:var(--text);">${escapeHtml(rewriteSuggestion)}</div>`;
+    } else {
+      box.style.display = "none";
+      box.textContent = "";
+    }
+  }
+
+  function updateAdvice(){
+    const text = collectAllInputText();
+    const hits = analyzeText(text);
+    const rew = proposeRewrite(text);
+    renderAdvice(hits, rew);
+    return { hits, rew };
+  }
+
+  function maskPrivacyIfNeeded(text, anonymous){
+    if (!anonymous) return text;
+    let out = text;
+    for (const m of PRIVACY_MASKS) out = out.replace(m.re, m.to);
+    out = out.replace(/(本名|フルネーム|住所|電話番号|メール)/g, "[非公開]");
+    return out;
+  }
+
+  // ====== “人間らしさ”強化：語尾を1か所だけゆるめる（追記がある時だけ） ======
+  function softenEndingOnce(text){
+    const patterns = [
+      { from: /でした。/, to: "だと思いました。" },
+      { from: /でしたが、/, to: "だと思いましたが、" },
+      { from: /と感じました。/, to: "と感じています。" },
+      { from: /と感じましたが、/, to: "と感じていますが、" }
+    ];
+    for (const p of patterns) {
+      if (text.match(p.from)) return text.replace(p.from, p.to);
+    }
+    return text;
+  }
+
+  // ====== “良かった点が増えたら1文だけ短くする” ======
+  function hasGoodPoints(d){
+    return !!(
+      d.good_mock || d.good_cert || d.good_interview_freq || d.good_online ||
+      (d.good_other && clean(d.good_other_text)) ||
+      clean(d.oProgram)
+    );
+  }
+
+  function shortenOneSentenceForGoodPoints(text){
+    const rules = [
+      { re: /全体的に落ち着いた雰囲気で、安心感がありました。/g, to: "落ち着いた雰囲気で安心できました。" },
+      { re: /初めての見学でしたが、安心して参加できました。/g, to: "初めてでも安心して参加できました。" },
+      { re: /緊張していましたが、思ったより安心して話せました。/g, to: "緊張はありましたが、安心して話せました。" },
+      { re: /必要な説明は受けられました。/g, to: "説明は受けられました。" },
+      { re: /まずは雰囲気を知ることができました。/g, to: "雰囲気を知ることができました。" },
+      { re: /見学・体験でお伺いしました。/g, to: "見学・体験に伺いました。" },
+      { re: /見学と体験に参加しました。/g, to: "見学・体験に参加しました。" }
+    ];
+
+    for (const r of rules) {
+      if (r.re.test(text)) return text.replace(r.re, r.to);
+    }
+
+    const safeDrops = [
+      "まずは雰囲気を知ることができました。",
+      "必要な説明は受けられました。"
+    ];
+    for (const s of safeDrops) {
+      if (text.includes(s)) return text.replace(s, "").replace(/\\n{3,}/g, "\\n\\n").trim();
+    }
+    return text;
+  }
+
+  // ====== 重複回避（良かった点がある時だけ） ======
+  function replaceNth(text, re, n, replacer){
+    let count = 0;
+    return text.replace(re, (m)=>{
+      count++;
+      if (count === n) return (typeof replacer === "function" ? replacer(m) : replacer);
+      return m;
+    });
+  }
+
+  function reduceRepeats(text){
+    let out = text;
+
+    const rules = [
+      { re: /安心/g, to: () => pick(["落ち着いて", "気持ちが楽に", "肩の力が抜けて"]) },
+      { re: /不安/g, to: () => pick(["心配", "緊張", "迷い"]) },
+      { re: /面談/g, to: () => pick(["相談", "話す機会", "スタッフとのやり取り"]) },
+      { re: /相談/g, to: () => pick(["質問", "話", "確認"]) },
+      { re: /雰囲気/g, to: () => pick(["空気感", "場の感じ", "環境"]) },
+      { re: /丁寧/g, to: () => pick(["分かりやすく", "ゆっくり", "親身に"]) },
+      { re: /親しみ/g, to: () => pick(["話しかけやすさ", "距離の近さ", "フランクさ"]) }
+    ];
+
+    for (const r of rules) {
+      const matches = out.match(r.re);
+      if (matches && matches.length >= 2) {
+        out = replaceNth(out, r.re, 2, () => r.to());
+      }
+    }
+
+    out = out.replace(/、\\s*、/g, "、").replace(/\\n{3,}/g, "\\n\\n");
+    return out;
+  }
+
+  function fixCommonCollisions(text){
+    let out = text;
+
+    if (out.includes("面談") && out.includes("面談の頻度（相談のしやすさ）")) {
+      out = out.replace("面談の頻度（相談のしやすさ）", pick([
+        "相談できる機会の多さ",
+        "話す機会の多さ",
+        "相談のしやすさ"
+      ]));
+    }
+
+    const m = out.match(/オンライン講義/g);
+    if (m && m.length >= 2) {
+      out = replaceNth(out, /オンライン講義/g, 2, "オンラインの講義");
+    }
+
+    return out;
+  }
+
+  function applyAntiRepetition(text, d){
+    if (!hasGoodPoints(d)) return text;
+    let out = text;
+    out = fixCommonCollisions(out);
+    out = reduceRepeats(out);
+    return out;
+  }
+
+  // ====== Variation helpers ======
+  function withNote(base, note){
+    const n = clean(note);
+    if (!n) return base;
+    const end = /[。！？!?]$/.test(n) ? "" : "と感じました。";
+    return `${base} 特に${n}${end}`;
+  }
+
+  function activityLine(d){
+    const acts = [];
+    if (d.act_interview) acts.push("面談");
+    if (d.act_tour) acts.push("施設見学");
+    if (d.act_training) acts.push("訓練体験");
+
+    const other = clean(d.act_other_text);
+    if (d.act_other && other) acts.push(other);
+    else if (d.act_other) acts.push("その他の説明");
+
+    if (!acts.length) return "";
+
+    const joined =
+      acts.length === 1 ? acts[0]
+      : acts.length === 2 ? `${acts[0]}と${acts[1]}`
+      : `${acts.slice(0, -1).join("、")}と${acts[acts.length - 1]}`;
+
+    return pick([
+      `当日は${joined}を体験しました。`,
+      `今回は${joined}の機会がありました。`,
+      `${joined}を通して、雰囲気を具体的に確認できました。`,
+      `見学・体験では、${joined}を中心に参加しました。`
+    ]);
+  }
+
+  function safeLine(d){
+    if (d.q1_safe === "yes") return withNote(pick([
+      "初めての見学でしたが、安心して参加できました。",
+      "全体的に落ち着いた雰囲気で、安心感がありました。",
+      "緊張していましたが、思ったより安心して話せました。"
+    ]), d.q1_safe_note);
+
+    return withNote(pick([
+      "少し緊張はありましたが、雰囲気を知ることはできました。",
+      "まだ慣れない部分もありましたが、確認できた点は良かったです。",
+      "自分には合うか迷う部分もありましたが、見学でイメージが湧きました。"
+    ]), d.q1_safe_note);
+  }
+
+  function staffLine(d){
+    const score = parseInt(d.q2_staff || "0", 10);
+    const note = clean(d.q2_staff_note);
+
+    const map = {
+      5: [
+        "スタッフの方がとても丁寧で、安心して相談できました。",
+        "こちらの話をよく聞いてくださり、落ち着いて話せました。",
+        "不安な点にも寄り添って説明していただけました。"
+      ],
+      4: [
+        "スタッフの方は親しみやすく、質問もしやすかったです。",
+        "丁寧に案内してもらえて助かりました。",
+        "安心できる声かけが多い印象でした。"
+      ],
+      3: [
+        "全体として落ち着いた対応で、どちらとも言えない印象でした。",
+        "必要な説明は受けられました。",
+        "まずは雰囲気を知ることができました。"
+      ],
+      2: [
+        "少し緊張する場面もありましたが、見学で確認できた点は良かったです。",
+        "合うかどうかは人によるかもしれないと感じました。",
+        "もう少し慣れてから判断したいと思いました。"
+      ],
+      1: [
+        "今回は自分には合わない部分もありましたが、見学で確認できて良かったです。",
+        "期待と違う点もあり、慎重に検討したいと思いました。",
+        "合うかどうかは個人差が大きいと感じました。"
+      ]
+    };
+
+    const base = pick(map[score] || ["スタッフ対応について記載します。"]);
+    if (!note) return base;
+    // メモ書きっぽさを避けて自然な一文にする
+    const end = /[。！？!?]$/.test(note) ? "" : "が印象でした。";
+    return `${base} 特に${note}${end}`;
+  }
+
+  function clearLine(d){
+    const note = clean(d.q3_clear_note);
+    if (d.q3_clear === "yes") return note
+      ? `面談や説明は分かりやすく、特に${note}が印象に残りました。`
+      : pick(["面談や説明は分かりやすく、初めてでも理解しやすかったです。","内容が整理されていて、全体像が掴みやすかったです。","説明が丁寧で、不安が少し和らぎました。"]);
+
+    if (d.q3_clear === "mid") return note
+      ? `内容によって分かりやすい部分と難しい部分があり、特に${note}が印象に残りました。`
+      : pick(["内容によって分かりやすい部分と、少し難しく感じる部分がありました。","一度で理解しきれない点もありましたが、確認できそうだと感じました。"]);
+
+    return note
+      ? `一度では分かりにくい点もありましたが、${note}などは確認できました。`
+      : pick(["一度では分かりにくい点もありましたが、質問すれば確認できそうだと感じました。","初回だと少し情報量が多く感じましたが、見学で方向性は掴めました。"]);
+  }
+
+  function recoLine(d){
+    // “他の方におすすめ” を避けて、本人の検討状況として自然に締める
+    if (d.q4_reco === "yes") return pick([
+      "全体として前向きに検討したいと思います。",
+      "今回の見学・体験で、通うイメージが少し持てました。",
+      "今後の選択肢として考えたいと思いました。"
+    ]);
+    if (d.q4_reco === "mid") return pick([
+      "もう少し情報を集めて検討したいと思います。",
+      "自分に合うか、もう少し確認してから判断したいと思います。",
+      "一度の見学だけでは決めきれないので、検討を続けたいと思います。"
+    ]);
+    return pick([
+      "自分には合うか慎重に検討したいと思います。",
+      "合う部分と迷う部分があるので、少し時間をかけて考えたいと思います。",
+      "今回は判断が難しいため、比較しながら検討したいと思います。"
+    ]);
+  }
+
+  function buildConcern(concern){
+    const c = clean(concern);
+    if (!c) return "";
+    return `気になった点としては、${c}。ただ、全体としては落ち着いて相談しやすい印象でした。`;
+  }
+
+  function headerLine(d){
+    const parts = [];
+    if (d.stars) parts.push(d.stars);
+    if (clean(d.facilityName)) parts.push(`【${clean(d.facilityName)}】`);
+    return parts.join("\n");
+  }
+
+  function signLine(d){
+    if (d.anonymous) return "";
+    const s = clean(d.userName);
+    return s ? `\n\n（${s}）` : "";
+  }
+
+  // ====== 追記（任意）を自然に差し込む：位置は“制約付きで揺らす” ======
+  function extraLine(d, zone){
+    const n = clean(d.extraNote);
+    if (!n) return "";
+    const leadBody = ["ちなみに、", "また、", "あわせて、", "補足すると、"];
+    const leadEnd  = ["最後に、", "ひとこと補足すると、", "付け加えると、", "念のため、"];
+    const lead = (zone === "body") ? pick(leadBody) : pick(leadEnd);
+    const end = /[。！？!?]$/.test(n) ? "" : "。";
+    return `${lead}${n}${end}`;
+  }
+
+  function insertExtraSafe(blocks, d, zonePlan){
+    const x = extraLine(d, zonePlan.zone);
+    if (!x) return;
+
+    const len = blocks.length;
+    const valid = zonePlan.positions
+      .map(p => Math.max(0, Math.min(len, p)))
+      .filter((v,i,a) => a.indexOf(v) === i);
+
+    const idx = valid.length ? pick(valid) : len;
+    blocks.splice(idx, 0, x);
+  }
+
+  // ====== 追記がある時だけ「段落を1つ減らす」 ======
+  function trimOneBlockForExtra(blocks, d){
+    if (!clean(d.extraNote)) return;
+    const starters = ["施設の雰囲気：", "施設については、", "体験後の変化：", "体験後は", "良かった点：", "プログラム面では、"];
+    for (const st of starters) {
+      const idx = blocks.findIndex(b => typeof b === "string" && b.startsWith(st));
+      if (idx >= 0) { blocks.splice(idx, 1); return; }
+    }
+  }
+
+  // ====== 良かった点 文（強化版） ======
+  function joinJaList(arr){
+    const a = arr.filter(Boolean);
+    if (!a.length) return "";
+    if (a.length === 1) return a[0];
+    if (a.length === 2) return `${a[0]}と${a[1]}`;
+    return `${a.slice(0, -1).join("、")}と${a[a.length - 1]}`;
+  }
+
+  function normalizeGoodPoints(d){
+    const pts = [];
+    if (d.good_mock) pts.push("模擬就労");
+    if (d.good_cert) pts.push("資格取得のサポート");
+    if (d.good_interview_freq) pts.push("面談の頻度（相談のしやすさ）");
+    if (d.good_online) pts.push("全国の講師によるオンライン講義");
+
+    const other = clean(d.good_other_text);
+    if (d.good_other && other) pts.push(other);
+    else if (d.good_other) pts.push("その他のサポート");
+
+    const free = clean(d.oProgram);
+    if (free) pts.push(free);
+
+    return Array.from(new Set(pts)).slice(0, 4);
+  }
+
+  function goodPointsLine(d, opts = {}){
+    const pts = normalizeGoodPoints(d);
+    if (!pts.length) return "";
+
+    const joined = joinJaList(pts);
+    const tone = opts.tone || "friendly";
+    const style = opts.style || "med"; // "short" | "med" | "polite"
+
+    const leadPool =
+      style === "short" ? ["", "特に、", "また、"]
+      : style === "polite" ? ["特に、", "また、", "あわせて、", "印象としては、"]
+      : ["特に、", "また、", "あわせて、", "ちなみに、"];
+
+    const endPool =
+      style === "polite"
+        ? ["と感じました。", "と思いました。", "と感じています。"]
+        : ["と感じました。", "と思いました。", "という印象でした。"];
+
+    const templates = [
+      () => `${pick(leadPool)}良かった点は、${joined}です。`,
+      () => `${pick(leadPool)}${joined}があるのは心強い${pick(endPool)}`,
+      () => `${pick(leadPool)}特に${joined}の点が印象に残りました。`,
+      () => `良かった点としては、${joined}が挙げられます。\
+自分の状況に合わせて相談しやすい${pick(endPool)}`,
+      () => `${pick(leadPool)}${joined}が用意されているのは助かりました。\
+続けて通うイメージが少し持てた${pick(endPool)}`,
+      () => `${pick(leadPool)}${joined}があることで、選択肢が広がる${pick(endPool)}`
+    ];
+
+    const pool = (style === "short") ? templates.slice(0, 3) : templates;
+
+    let line = pick(pool)();
+    if (tone === "casual") {
+      // 現状は大きく崩さず（必要ならここを調整）
+    }
+    return line;
+  }
+
+  // ====== Draft builders ======
+  function buildDraftShort(d){
+    const head = headerLine(d);
+    const open = pick(["見学・体験の機会がありました。","見学と体験で伺いました。","体験に参加しました。"]);
+    let sents = collectSentences(d) || [];
+    const mix = sents.concat(derivedSentences(d));
+    const core = pickMany(mix, 2);
+    const close = closingLine(d) || "参考になりました。";
+    const body = open + joinSentences(core, "short") + ensureMasu(close);
+    const text = [head, clipAt(body, 100)].filter(Boolean).join("\n");
+    return text.trim();
+  }
+  function buildDraftMed(d){
+    const head = headerLine(d);
+    const open = pick(["見学・体験で伺いました。","見学の機会をいただきました。","体験に参加しました。"]);
+    let sents = collectSentences(d) || [];
+    const mix = sents.concat(derivedSentences(d));
+    const core = pickMany(mix, 3);
+    const close = closingLine(d) || "参考になりました。";
+    const body = open + joinSentences(core, "med") + ensureMasu(close);
+    const text = [head, clipAt(body, 200)].filter(Boolean).join("\n");
+    return text.trim();
+  }
+  function buildDraftPolite(d){
+    const head = headerLine(d);
+    const open = pick(["見学・体験の機会をいただき、ありがとうございました。","このたび見学と体験で伺いました。","見学でお話を伺いました。"]);
+    let sents = collectSentences(d) || [];
+    const mix = sents.concat(derivedSentences(d));
+    const core = pickMany(mix, 4);
+    const close = closingLine(d) || "参考になりました。";
+    const body = open + joinSentences(core, "polite") + ensureMasu(close);
+    const text = [head, clipAt(body, 300)].filter(Boolean).join("\n");
+    return text.trim();
+  }
+
+  
+  // ====== UI helpers
+  // ====== UI helpers ======
+  function setStatus(msg, warn=false){
+    const x = el("formStatus");
+    x.textContent = msg;
+    x.className = "status" + (warn ? " warn" : "");
+  }
+  function setOneStatus(id, msg){ el(id).textContent = msg; }
+
+  function gather(){
+    return {
+      stars: el("stars").value,
+      tone: el("tone").value,
+      facilityName: el("facilityName").value,
+      userName: el("userName").value,
+      includeConcern: el("includeConcern") ? el("includeConcern").checked : true,
+      anonymous: el("anonymous").checked,
+
+      act_interview: el("act_interview").checked,
+      act_tour: el("act_tour").checked,
+      act_training: el("act_training").checked,
+      act_other: el("act_other").checked,
+      act_other_text: el("act_other_text").value,
+
+      good_mock: el("good_mock").checked,
+      good_cert: el("good_cert").checked,
+      good_interview_freq: el("good_interview_freq").checked,
+      good_online: el("good_online").checked,
+      good_other: el("good_other").checked,
+      good_other_text: el("good_other_text").value,
+
+      q1_safe: el("q1_safe").value,
+      q1_safe_note: el("q1_safe_note").value,
+      q2_staff: el("q2_staff").value,
+      q2_staff_note: el("q2_staff_note").value,
+      q3_clear: el("q3_clear").value,
+      q3_clear_note: el("q3_clear_note").value,
+      q4_reco: el("q4_reco").value,
+
+      extraNote: el("extraNote").value,
+
+      oProgram: el("oProgram").value,
+      oPlace: el("oPlace").value,
+      oChange: el("oChange").value,
+      oConcern: el("oConcern").value
+    };
+  }
+
+  function validateRequired(d){
+    const missing = [];
+    if (!clean(d.q1_safe)) missing.push("必須①（安心）");
+    if (!clean(d.q2_staff)) missing.push("必須②（スタッフ対応）");
+    if (!clean(d.q3_clear)) missing.push("必須③（分かりやすさ）");
+    if (!clean(d.q4_reco)) missing.push("必須④（おすすめ）");
+    return missing;
+  }
+
+  function syncAnonymousUI(){
+    const on = el("anonymous").checked;
+    el("anonBadge").textContent = on ? "ON" : "OFF";
+    el("userName").disabled = on;
+    el("userName").placeholder = on ? "匿名ONのため署名は使いません" : "例：体験利用者 / 利用検討者";
+  }
+
+  // Live advice listeners
+  const LIVE_IDS = [
+    "facilityName","userName","freeText",
+    "q1_safe_note","q2_staff_note","q3_clear_note",
+    "extraNote","act_other_text","good_other_text",
+    "oProgram","oPlace","oChange","oConcern"
+  ];
+  LIVE_IDS.forEach(id => { if (el(id)) el(id).addEventListener("input", updateAdvice); });
+  el("anonymous").addEventListener("change", ()=>{ syncAnonymousUI(); updateAdvice();
+  setStatus("準備完了：入力して『3案生成』を押してください。");
+  // JSが動いていることが分かるように、ステータス末尾に時刻を更新
+  setInterval(()=>{
+    const s = document.getElementById('formStatus');
+    if (s && s.textContent && s.textContent.startsWith('準備完了')) {
+      const now = new Date();
+      const t = now.toLocaleTimeString();
+      s.textContent = '準備完了：入力して『3案生成』を押してください。（' + t + '）';
+    }
+  }, 1000);
+
+  setStatus("準備完了：入力して『3案生成』を押してください。"); });
+
+  // Generate
+  el("genBtn").addEventListener("click", () => {
+    try{
+      showLoading("原稿を生成しています…");
+    if (!el("modeAi").checked) { setStatus("自由記述モードです。コピーして貼り付けてね。"); return; }
+
+    const d = gather();
+    const missing = validateRequired(d);
+    const { hits } = updateAdvice();
+
+    if (missing.length) {
+      setStatus("未入力の必須項目があります： " + missing.join(" / "), true);
+      return;
+    }
+
+    if (hits.length) {
+      const ok = confirm("入力に注意点が見つかりました（個人情報/強い表現/医療断定など）。このまま生成しますか？\\n\\n※生成後に編集できます。");
+      if (!ok) { setStatus("生成をキャンセルしました。注意点を整えてからもう一度どうぞ。", true); return; }
+    }
+
+    let short = buildDraftShort(d);
+    let med   = buildDraftMed(d);
+    let pol   = buildDraftPolite(d);
+
+    short = maskPrivacyIfNeeded(short, d.anonymous);
+    med   = maskPrivacyIfNeeded(med, d.anonymous);
+    pol   = maskPrivacyIfNeeded(pol, d.anonymous);
+
+    el("draftShort").textContent = short;
+    el("draftMed").textContent   = med;
+    el("draftPol").textContent   = pol;
+
+    const metaTxt = [
+      clean(d.facilityName) ? d.facilityName : "事業所名なし",
+      `トーン:${d.tone}`,
+      d.includeConcern ? "気になった点:入れる" : "気になった点:入れない",
+      d.anonymous ? "匿名:ON（マスク有）" : "匿名:OFF",
+      clean(d.extraNote) ? "追記:あり（自然化）" : "追記:なし"
+    ].join(" / ");
+
+    el("metaShort").textContent = "短い版｜生成済み｜" + metaTxt;
+    el("metaMed").textContent   = "標準版｜生成済み｜" + metaTxt;
+    el("metaPol").textContent   = "丁寧版｜生成済み｜" + metaTxt;
+
+    setOneStatus("statusShort","短い版：編集してコピーできます。");
+    setOneStatus("statusMed","標準版：編集してコピーできます。");
+    setOneStatus("statusPol","丁寧版：編集してコピーできます。");
+    setStatus("3案を生成したよ。気に入った案を編集してコピーしてね。");
+
+    updateAdvice();
+    } finally {
+      hideLoading();
+    }
+  });
+
+  // Sample / clear
+  el("sampleBtn").addEventListener("click", () => {
+    try{
+      showLoading("サンプルを読み込んでいます…");
+    el("q1_safe").value = "yes";
+    el("q1_safe_note").value = "質問しやすく、雰囲気が落ち着いていた";
+    el("q2_staff").value = "5";
+    el("q2_staff_note").value = "丁寧で親しみやすい。面談頻度が多いと感じた";
+    el("q3_clear").value = "yes";
+    el("q3_clear_note").value = "模擬就労の説明が分かりやすかった";
+    el("q4_reco").value = "yes";
+
+    el("act_interview").checked = true;
+    el("act_tour").checked = true;
+    el("act_training").checked = true;
+    el("act_other").checked = true;
+    el("act_other_text").value = "オンライン講義の説明";
+
+    el("extraNote").value = "見学してみて、少し前向きになれました";
+
+    el("good_mock").checked = true;
+    el("good_cert").checked = true;
+    el("good_interview_freq").checked = true;
+    el("good_online").checked = true;
+    el("good_other").checked = false;
+    el("good_other_text").value = "";
+
+    el("oProgram").value = "資格取得の流れが具体的で、取り組み方のイメージが湧きました。";
+    el("oPlace").value = "清潔感があり落ち着いた雰囲気で、集中しやすそうでした。";
+    el("oChange").value = "通うイメージが湧いて不安が少し軽くなりました。";
+    el("oConcern").value = "混み合う時間帯は少し賑やかに感じるかもしれません";
+    el("includeConcern").checked = true;
+
+    el("freeText").value =
+`①見学のきっかけ／訪問前の気持ち
+②当日やったこと（面談・見学・体験など）
+③良かった点
+④気になった点（任意）
+⑤おすすめ一言`;
+
+    el("anonymous").checked=false; syncAnonymousUI();
+    el("modeAi").checked=true; syncModeUI();
+    updateAdvice();
+    setStatus("サンプルを入れて、原稿も自動生成しました。必要なら編集してコピーしてね。");
+    el("genBtn").click();
+    } finally {
+      hideLoading();
+    }
+  });
+
+  el("clearBtn").addEventListener("click", () => {
+    ["stars","facilityName","userName","freeText",
+     "q1_safe_note","q2_staff_note","q3_clear_note",
+     "extraNote","act_other_text","good_other_text",
+     "oProgram","oPlace","oChange","oConcern"].forEach(id=>{
+      const x = el(id);
+      if (!x) return;
+      if (x.tagName==="SELECT") x.value = "";
+      else x.value = "";
+    });
+
+    el("q1_safe").value = "";
+    el("q2_staff").value = "";
+    el("q3_clear").value = "";
+    el("q4_reco").value = "";
+
+    ["act_interview","act_tour","act_training","act_other"].forEach(id => el(id).checked = false);
+    el("act_other_text").value = "";
+
+    ["good_mock","good_cert","good_interview_freq","good_online","good_other"].forEach(id => el(id).checked = false);
+    el("good_other_text").value = "";
+
+    el("tone").value = "friendly";
+    el("includeConcern").checked = true;
+
+    el("anonymous").checked=false; syncAnonymousUI();
+    el("modeAi").checked=true; syncModeUI();
+
+    // Reset generated drafts + per-draft status/meta
+    const placeholders = {
+      draftShort: "短い版の原稿はここに表示されます。",
+      draftMed:   "標準版の原稿はここに表示されます。",
+      draftPol:   "丁寧版の原稿はここに表示されます。"
+    };
+    Object.keys(placeholders).forEach(id=>{
+      const node = el(id);
+      if (node) node.textContent = placeholders[id];
+    });
+    ["statusShort","statusMed","statusPol"].forEach(id=>{
+      const node = el(id);
+      if (node) node.textContent = "";
+    });
+    const metaBase = {
+      metaShort: "短い版｜未生成",
+      metaMed:   "標準版｜未生成",
+      metaPol:   "丁寧版｜未生成"
+    };
+    Object.keys(metaBase).forEach(id=>{
+      const node = el(id);
+      if (node) node.textContent = metaBase[id];
+    });
+
+    updateAdvice();
+    setStatus("入力と原稿をクリアしました。");
+  });
+
+  // Copy buttons
+  document.querySelectorAll(".copyOne").forEach(btn=>{
+    btn.addEventListener("click", async ()=>{
+      const targetId = btn.getAttribute("data-target");
+      const target = el(targetId);
+      const text = target ? (target.value !== undefined ? target.value : target.innerText) : "";
+
+      if (!clean(text) || text.includes("ここに表示されます")) { setStatus("コピーする内容がありません。", true); return; }
+
+      try {
+        const ok = await copyTextToClipboard(text);
+        if (ok) setStatus("コピーしました。口コミページで貼り付けてね。");
+        else setStatus("コピーできませんでした（この環境では制限があります）。手動でコピーしてください。", true);
+      } catch(e) {
+        setStatus("コピーに失敗しました。手動でコピーしてください。", true);
+      }
+    });
+  });
+
+  // Open review page (URL fixed)
+  function openReviewPage(){
+    // Try same-tab navigation first (often works even when popups are blocked)
+    try {
+      window.location.assign(REVIEW_URL);
+      return;
+    } catch(e) {}
+
+    // Try opening a new tab via a real <a> click (more compatible than window.open in some environments)
+    try {
+      const a = document.createElement("a");
+      a.href = REVIEW_URL;
+      a.target = "_blank";
+      a.rel = "noopener";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      return;
+    } catch(e) {}
+
+    // Last resort: show/copy URL so user can paste into Safari/Chrome
+    try {
+      const box = document.getElementById("reviewUrlBox");
+      if (box){
+        box.value = REVIEW_URL;
+        box.style.display = "block";
+        box.focus();
+        box.select();
+      }
+    } catch(e) {}
+  }
+
+  document.querySelectorAll(".openBtn").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      openReviewPage();
+
+  // Copy review URL (fallback when navigation is blocked)
+  const copyReviewUrlBtn = document.getElementById("copyReviewUrl");
+  const reviewUrlBox = document.getElementById("reviewUrlBox");
+  if (reviewUrlBox) reviewUrlBox.value = REVIEW_URL;
+  if (copyReviewUrlBtn){
+    copyReviewUrlBtn.addEventListener("click", async ()=>{
+      try{
+        await navigator.clipboard.writeText(REVIEW_URL);
+        setStatus("口コミURLをコピーしました。Safari/Chromeのアドレス欄に貼り付けて開けます。");
+      }catch(e){
+        // fallback: show and select
+        if (reviewUrlBox){
+          reviewUrlBox.style.display = "block";
+          reviewUrlBox.focus();
+          reviewUrlBox.select();
+          setStatus("コピーができない環境です。表示されたURLを選択してコピーしてください。");
+        }else{
+          setStatus("コピーができない環境です。リンク（開けない時はこちら）を長押しして開いてください。");
+        }
+      }
+    });
+  }
+      setStatus("口コミページへ移動しました（開かない場合はポップアップ許可、またはSafariで開いてください）。");
+    });
+  });
+
+  // ====== JS Alive Badge ======
+  (function(){
+    const dot = document.getElementById('jsAliveDot');
+    const txt = document.getElementById('jsAliveText');
+    let on = false;
+    function tick(){
+      on = !on;
+      if (dot) dot.style.background = on ? '#22c55e' : '#16a34a';
+      if (txt) txt.textContent = 'JS: 稼働中（' + (new Date()).toLocaleTimeString() + '）';
+    }
+    tick();
+    setInterval(tick, 1000);
+  })();
+
+  // init
+  syncAnonymousUI();
+  syncModeUI();
+  updateAdvice();
+});
+</script>
+</body>
+</html>
