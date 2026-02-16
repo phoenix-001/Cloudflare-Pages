@@ -129,6 +129,11 @@ main { max-width: 760px; }
           <input type="radio" name="mode" id="modeFree" value="free">
           <label for="modeFree" style="margin:0;">自分で自由に書く（自由記述）</label>
         </div>
+        <div class="btns">
+          <button type="button" id="quickReviewOnly">利用せずに口コミだけ書く</button>
+          <button type="button" id="quickStarsOnly">星だけ評価をする</button>
+        </div>
+        <div class="hint">上の2つは「自由記述モード」へ自動で切り替わります。</div>
       </div>
 
       <div class="hint">投稿画面は「口コミページを開く」ボタンで開きます（URL固定）。<br><a id="reviewLink" href="https://search.google.com/local/writereview?placeid=ChIJpazYlBQdGWARyuN1VZT8bug" target="_blank" rel="noopener" style="display:inline-block;margin-top:6px;font-size:12px;">口コミページのリンク（開けない時はこちら）</a></div>
@@ -813,8 +818,36 @@ document.addEventListener('DOMContentLoaded', ()=>{
     el("genBtn").disabled = !ai;
     el("genBtn").title = ai ? "" : "自由記述モードでは生成は不要です";
   }
+
+  function activateFreeMode(){
+    el("modeFree").checked = true;
+    syncModeUI();
+  }
+
+  function applyQuickMode(type){
+    activateFreeMode();
+
+    if (type === "review-only"){
+      if (!clean(el("freeText").value)){
+        el("freeText").value = "今回は実際の利用はしていませんが、見学時の説明が分かりやすく、安心して相談できる雰囲気だと感じました。";
+      }
+      setStatus("『利用せずに口コミだけ書く』を選択しました。必要に応じて文章を調整してお使いください。");
+      el("freeText").focus();
+      return;
+    }
+
+    if (type === "stars-only"){
+      el("freeText").value = "";
+      if (!el("stars").value) el("stars").value = "★★★★★";
+      setStatus("『星だけ評価をする』を選択しました。星を選んで「口コミページを開く」に進んでください。");
+      el("stars").focus();
+    }
+  }
+
   el("modeAi").addEventListener("change", syncModeUI);
   el("modeFree").addEventListener("change", syncModeUI);
+  el("quickReviewOnly").addEventListener("click", ()=>applyQuickMode("review-only"));
+  el("quickStarsOnly").addEventListener("click", ()=>applyQuickMode("stars-only"));
 
   // ====== NG/Privacy detection rules ======
   const REPLACEMENTS = [
